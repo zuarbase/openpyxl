@@ -1,3 +1,13 @@
+Zuar Fork of openpyxl
+---------------------
+
+This is Zuar's fork of https://foss.heptapod.net/openpyxl/openpyxl, which was made because a fix for
+https://zuarkb.atlassian.net/browse/MIT-2675 has not been merged into a new openpyxl release.  Once
+the fix is available in the published Python package, this repo should be deleted and Mitto's dependencies
+should be updated to again use the published openpyxl package.
+
+-------------------------------------------------------------------------------------------------------
+
 .. image:: https://coveralls.io/repos/bitbucket/openpyxl/openpyxl/badge.svg?branch=default
     :target: https://coveralls.io/bitbucket/openpyxl/openpyxl?branch=default
     :alt: coverage status
