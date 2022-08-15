@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2022 openpyxl
-
+import logging
 from warnings import warn
 
 from openpyxl.descriptors.serialisable import Serialisable
@@ -35,7 +35,6 @@ from .cell_style import CellStyle, CellStyleList
 
 
 class Stylesheet(Serialisable):
-
     tagname = "styleSheet"
 
     numFmts = Typed(expected_type=NumberFormatList)
@@ -65,7 +64,7 @@ class Stylesheet(Serialisable):
                  tableStyles=None,
                  colors=None,
                  extLst=None,
-                ):
+                 ):
         if numFmts is None:
             numFmts = NumberFormatList()
         self.numFmts = numFmts
@@ -93,7 +92,6 @@ class Stylesheet(Serialisable):
         self._normalise_numbers()
         self.named_styles = self._merge_named_styles()
 
-
     @classmethod
     def from_tree(cls, node):
         # strip all attribs
@@ -101,7 +99,6 @@ class Stylesheet(Serialisable):
         for k in attrs:
             del node.attrib[k]
         return super(Stylesheet, cls).from_tree(node)
-
 
     def _merge_named_styles(self):
         """
@@ -115,12 +112,16 @@ class Stylesheet(Serialisable):
 
         return named_styles
 
-
     def _expand_named_style(self, named_style):
         """
         Bind format definitions for a named style from the associated style
         record
         """
+
+        if self.cellStyleXfs.count < named_style.xfId + 1:
+            logging.warning("Styles doesn't match and sheet index is out of range. ")
+            return
+
         xf = self.cellStyleXfs[named_style.xfId]
         named_style.font = self.fonts[xf.fontId]
         named_style.fill = self.fills[xf.fillId]
@@ -136,7 +137,6 @@ class Stylesheet(Serialisable):
         if xf.protection:
             named_style.protection = xf.protection
 
-
     def _split_named_styles(self, wb):
         """
         Convert NamedStyle into separate CellStyle and Xf objects
@@ -145,11 +145,9 @@ class Stylesheet(Serialisable):
             self.cellStyles.cellStyle.append(style.as_name())
             self.cellStyleXfs.xf.append(style.as_xf())
 
-
     @property
     def custom_formats(self):
         return dict([(n.numFmtId, n.formatCode) for n in self.numFmts.numFmt])
-
 
     def _normalise_numbers(self):
         """
@@ -163,7 +161,7 @@ class Stylesheet(Serialisable):
         for idx, style in enumerate(self.cell_styles):
             if style.numFmtId in custom:
                 fmt = custom[style.numFmtId]
-                if fmt in BUILTIN_FORMATS_REVERSE: # remove builtins
+                if fmt in BUILTIN_FORMATS_REVERSE:  # remove builtins
                     style.numFmtId = BUILTIN_FORMATS_REVERSE[fmt]
                 else:
                     style.numFmtId = formats.add(fmt) + BUILTIN_FORMATS_MAX_SIZE
@@ -177,7 +175,6 @@ class Stylesheet(Serialisable):
                 timedelta_formats.add(idx)
         self.date_formats = date_formats
         self.timedelta_formats = timedelta_formats
-
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
         tree = super(Stylesheet, self).to_tree(tagname, idx, namespace)
